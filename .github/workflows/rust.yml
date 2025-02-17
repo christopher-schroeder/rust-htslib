@@ -43,7 +43,10 @@ jobs:
 
   Testing:
     needs: Formatting
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -76,9 +79,9 @@ jobs:
 
   Testing-Features:
     needs: Formatting
-    runs-on: ubuntu-22.04
     strategy:
       matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
         target:
           - no-default-features
           - all-features
@@ -87,10 +90,16 @@ jobs:
             args: --no-default-features
             use_cross: false
           - target: all-features
+            os: ubuntu-22.04
             args: --all-features
             toolchain_target: x86_64-unknown-linux-musl
             use_cross: false
-
+          - target: all-features
+            os: ubuntu-22.04-arm
+            args: --all-features
+            toolchain_target: aarch64-unknown-linux-musl
+            use_cross: false
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
