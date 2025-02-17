@@ -37,9 +37,7 @@ jobs:
           components: clippy
 
       - name: Lint with clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: RUSTFLAGS="-Dwarnings" cargo clippy --all-features --all-targets -- -Dclippy::all -Dunused_imports
 
   Testing:
     needs: Formatting
@@ -67,7 +65,6 @@ jobs:
       - name: Run cargo-tarpaulin
         run: |
           set -x
-          # TODO: update to latest tarpaulin once artefact download is fixed: https://github.com/actions-rs/tarpaulin/pull/23
           cargo install cargo-tarpaulin
           cargo tarpaulin --all-features --tests --doc --out Lcov -- --test-threads 1
 
@@ -88,17 +85,14 @@ jobs:
         include:
           - target: no-default-features
             args: --no-default-features
-            use_cross: false
           - target: all-features
             os: ubuntu-22.04
             args: --all-features
             toolchain_target: x86_64-unknown-linux-musl
-            use_cross: false
           - target: all-features
             os: ubuntu-22.04-arm
             args: --all-features
             toolchain_target: aarch64-unknown-linux-musl
-            use_cross: false
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -118,11 +112,8 @@ jobs:
       - uses: Swatinem/rust-cache@v1.3.0
 
       - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: ${{ matrix.args }}
-          use-cross: ${{ matrix.use_cross }}
+        run: |
+          cargo test ${{ matrix.args }}
 
   Testing-MacOS:
     needs: Formatting
@@ -170,11 +161,8 @@ jobs:
         run: brew install bzip2 zlib xz curl-openssl
 
       - name: Test
-        uses: actions-rs/cargo@v1.0.1
-        with:
-          use-cross: false # cross is not supported on GHA OSX runner, see: https://github.community/t/why-is-docker-not-installed-on-macos/17017
-          command: test
-          args: --release --all-features --verbose ${{ matrix.aux_args }}
+        run: |
+          cargo test --release --all-features --verbose ${{ matrix.aux_args }}
 #  Testing-OSX-MUSL-BigSur:
 #   needs: Formatting
 #   runs-on: macOS-11.0
