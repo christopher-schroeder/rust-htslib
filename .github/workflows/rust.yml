@@ -65,11 +65,11 @@ jobs:
       - uses: Swatinem/rust-cache@v1.3.0
 
       - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        with:
+        run: |
+          set -x
           # TODO: update to latest tarpaulin once artefact download is fixed: https://github.com/actions-rs/tarpaulin/pull/23
-          version: "0.32.0"
-          args: "--all-features --run-types Tests,Doctests --out Lcov -- --test-threads 1"
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --all-features --run-types Tests,Doctests --out Lcov -- --test-threads 1
 
       - name: Upload coverage
         uses: coverallsapp/github-action@v1
